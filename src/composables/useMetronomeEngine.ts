@@ -42,14 +42,24 @@ export function useMetronomeEngine() {
     const b = { bar: pts[1].bar * barsPerCell, bpm: pts[1].bpm };
     const c = { bar: pts[2].bar * barsPerCell, bpm: pts[2].bpm };
 
+    // NEW: If we are before the first point, stay at first point's BPM
+    if (bar <= a.bar) {
+      return a.bpm;
+    }
+
+    // Linear interpolation between point A and B
     if (bar <= b.bar) {
       const t = (bar - a.bar) / (b.bar - a.bar || 1);
       return a.bpm + t * (b.bpm - a.bpm);
     }
+
+    // Linear interpolation between point B and C
     if (bar <= c.bar) {
       const t = (bar - b.bar) / (c.bar - b.bar || 1);
       return b.bpm + t * (c.bpm - b.bpm);
     }
+
+    // If we are past point C, stay at point C's BPM
     return c.bpm;
   }
 
