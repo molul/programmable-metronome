@@ -53,7 +53,7 @@ const bpmToRow = (bpm: number) => props.rows - Math.round((bpm - 40) / 5);
 const rowToBpm = (row: number) => 40 + (props.rows - row) * 5;
 
 const points = ref<GridPoint[]>([
-  { col: 2, row: bpmToRow(props.startBpm) },
+  { col: 0, row: bpmToRow(props.startBpm) },
   { col: 8, row: bpmToRow(props.maxBpm) },
   { col: 12, row: bpmToRow(props.endBpm) },
 ]);

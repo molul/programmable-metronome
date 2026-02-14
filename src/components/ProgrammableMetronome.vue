@@ -83,18 +83,16 @@ const isRunning = computed(() => engine.isRunning.value);
       <div class="flex gap-2 justify-center items-center px-3">
         <Button
           v-if="!isRunning"
-          label="Start"
           icon="solar:play-bold"
-          :full-width="true"
           size="big"
+          shape="rounded"
           @click="start"
         />
         <Button
           v-if="isRunning"
           icon="solar:stop-bold"
-          label="Stop"
           type="alert"
-          :full-width="true"
+          shape="rounded"
           size="big"
           @click="engine.stop()"
         />
