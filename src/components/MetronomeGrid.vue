@@ -23,6 +23,9 @@ const emit = defineEmits<{
   (e: "update:points", points: [TempoPoint, TempoPoint, TempoPoint]): void;
 }>();
 
+const tempoColumnWidth = 26;
+const padding = 16;
+
 const container = ref<HTMLDivElement | null>(null);
 const w = ref(300);
 const h = ref(500);
@@ -30,7 +33,7 @@ const h = ref(500);
 function resize() {
   if (!container.value) return;
   const cw = container.value.clientWidth;
-  w.value = cw;
+  w.value = cw - tempoColumnWidth - padding * 2;
   h.value = Math.min(window.innerHeight * 0.7, cw * 1.5);
 }
 
@@ -50,7 +53,7 @@ const bpmToRow = (bpm: number) => props.rows - Math.round((bpm - 40) / 5);
 const rowToBpm = (row: number) => 40 + (props.rows - row) * 5;
 
 const points = ref<GridPoint[]>([
-  { col: 0, row: bpmToRow(props.startBpm) },
+  { col: 2, row: bpmToRow(props.startBpm) },
   { col: 8, row: bpmToRow(props.maxBpm) },
   { col: 12, row: bpmToRow(props.endBpm) },
 ]);
@@ -177,86 +180,95 @@ const currentCol = computed(() => {
 </script>
 
 <template>
-  <div ref="container" class="w-full bg-white relative">
-    <svg
-      :width="w"
-      :height="h"
-      @mousemove="move"
-      @mouseup="up"
-      @mouseleave="up"
-      @touchmove.prevent="move"
-      @touchend="up"
-      class="select-none touch-none"
-    >
-      <g stroke="#eee">
-        <line
-          v-for="c in cols + 1"
-          :key="`col-${c}`"
-          :x1="(c - 1) * cellW"
-          y1="0"
-          :x2="(c - 1) * cellW"
-          :y2="h"
-        />
-        <line
-          v-for="r in rows + 1"
-          :key="`row-${r}`"
-          x1="0"
-          :y1="(r - 1) * cellH"
-          :x2="w"
-          :y2="(r - 1) * cellH"
-        />
-      </g>
-
-      <text
+  <div ref="container" class="w-full relative flex px-4">
+    <div class="flex flex-col select-none z-10">
+      <div
         v-for="r in rows"
         :key="`label-${r}`"
-        :x="2"
-        :y="(r - 1) * cellH + 10"
-        class="text-[8px] fill-gray-500 pointer-events-none"
+        class="text-[10px] text-white flex items-center font-bold justify-end pr-2"
+        :style="{
+          width: tempoColumnWidth + 'px',
+          height: cellH + 'px',
+          lineHeight: '12px',
+        }"
       >
         {{ 40 + (rows - r) * 5 }}
-      </text>
+      </div>
+    </div>
 
-      <rect
-        v-if="currentCol !== null"
-        :x="currentCol * cellW"
-        y="0"
-        :width="cellW"
+    <div class="w-full bg-gray-700">
+      <svg
+        :width="w"
         :height="h"
-        fill="rgba(200,200,255,0.4)"
-      />
-      <line
-        v-if="playheadBar !== null"
-        :x1="playheadX"
-        y1="0"
-        :x2="playheadX"
-        :y2="h"
-        stroke="red"
-        stroke-width="2"
-      />
+        @mousemove="move"
+        @mouseup="up"
+        @mouseleave="up"
+        @touchmove.prevent="move"
+        @touchend="up"
+        class="select-none touch-none w-full"
+      >
+        <!-- Grid lines -->
+        <g class="stroke-gray-500">
+          <line
+            v-for="c in cols + 1"
+            :key="`col-${c}`"
+            :x1="(c - 1) * cellW"
+            y1="0"
+            :x2="(c - 1) * cellW"
+            :y2="h"
+          />
+          <line
+            v-for="r in rows + 1"
+            :key="`row-${r}`"
+            x1="0"
+            :y1="(r - 1) * cellH"
+            :x2="w"
+            :y2="(r - 1) * cellH"
+          />
+        </g>
 
-      <g stroke="black" stroke-width="2">
-        <line
-          v-for="(s, i) in segments"
-          :key="`seg-${i}`"
-          :x1="s.x1"
-          :y1="s.y1"
-          :x2="s.x2"
-          :y2="s.y2"
+        <!-- Light blue cell -->
+        <rect
+          v-if="currentCol !== null"
+          :x="currentCol * cellW"
+          y="0"
+          :width="cellW"
+          :height="h"
+          fill="rgba(255,255,255,0.2)"
         />
-      </g>
-
-      <circle
-        v-for="(p, i) in points"
-        :key="`pt-${i}`"
-        :cx="svgPt(p).x"
-        :cy="svgPt(p).y"
-        r="12"
-        fill="blue"
-        class="cursor-pointer"
-        @mousedown="down(i, $event)"
-        @touchstart.prevent="down(i, $event)"
-      />
-    </svg>
+        <!-- Bars red line -->
+        <line
+          v-if="playheadBar !== null"
+          :x1="playheadX"
+          y1="0"
+          :x2="playheadX"
+          :y2="h"
+          stroke="red"
+          stroke-width="2"
+        />
+        <!-- Black lines between blue points -->
+        <g stroke-width="2" class="stroke-white">
+          <line
+            v-for="(s, i) in segments"
+            :key="`seg-${i}`"
+            :x1="s.x1"
+            :y1="s.y1"
+            :x2="s.x2"
+            :y2="s.y2"
+          />
+        </g>
+        <!-- Blue points -->
+        <circle
+          v-for="(p, i) in points"
+          :key="`pt-${i}`"
+          :cx="svgPt(p).x"
+          :cy="svgPt(p).y"
+          r="12"
+          class="cursor-pointer fill-blue-300"
+          @mousedown="down(i, $event)"
+          @touchstart.prevent="down(i, $event)"
+        />
+      </svg>
+    </div>
   </div>
 </template>

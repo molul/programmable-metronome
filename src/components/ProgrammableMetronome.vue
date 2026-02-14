@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { reactive, ref, computed, onMounted, watch } from "vue";
 import MetronomeGrid from "./MetronomeGrid.vue";
-import MetronomeControls from "./MetronomeControls.vue";
 import {
   type TempoPoint,
   useMetronomeEngine,
 } from "../composables/useMetronomeEngine";
 import Button from "./Button.vue";
+import Header from "./Header.vue";
 
 const cfg = reactive({
   startBpm: 100,
@@ -59,42 +59,49 @@ function start() {
   engine.start(points.value, cfg.stopAtEnd, cfg.barsPerCell);
 }
 
-const menuVisible = ref(false);
 const isRunning = computed(() => engine.isRunning.value);
 </script>
 
 <template>
   <div
-    class="w-full max-w-[1080px] mx-auto rounded-md flex flex-col gap-4 bg-gray-700 relative p-1"
+    class="w-full max-w-[1080px] mx-auto rounded-lg flex flex-col gap-0 bg-gray-800 relative p-0 h-full"
   >
-    <Button
-      :label="menuVisible ? 'Close' : 'Show config'"
-      @click="menuVisible = !menuVisible"
-    />
-    <MetronomeControls
-      v-show="menuVisible"
-      v-model="cfg"
-      :is-running="engine.isRunning"
-    />
+    <Header v-model="cfg" :is-running="engine.isRunning" />
 
-    <div class="flex gap-2 justify-between items-center">
-      <Button v-if="!isRunning" label="Start" @click="start" />
-      <Button v-if="isRunning" label="Stop" @click="engine.stop()" />
-      <span class="font-bold text-lg p-2 text-white"
-        >{{ engine.currentBpm }} BPM</span
-      >
+    <div class="flex flex-col gap-4">
+      <MetronomeGrid
+        :cols="16"
+        :rows="37"
+        :start-bpm="cfg.startBpm"
+        :max-bpm="cfg.maxBpm"
+        :end-bpm="cfg.endBpm"
+        :bars-per-cell="cfg.barsPerCell"
+        :tempo-map="tempoMap"
+        :playhead-bar="engine.visualBar"
+        @update:points="updatePoints"
+      />
+      <div class="flex gap-2 justify-center items-center px-3">
+        <Button
+          v-if="!isRunning"
+          label="Start"
+          icon="solar:play-bold"
+          :full-width="true"
+          size="big"
+          @click="start"
+        />
+        <Button
+          v-if="isRunning"
+          icon="solar:stop-bold"
+          label="Stop"
+          type="alert"
+          :full-width="true"
+          size="big"
+          @click="engine.stop()"
+        />
+      </div>
+      <span class="font-bold text-2xl px-3 text-white">
+        {{ engine.currentBpm }} BPM
+      </span>
     </div>
-
-    <MetronomeGrid
-      :cols="16"
-      :rows="32"
-      :start-bpm="cfg.startBpm"
-      :max-bpm="cfg.maxBpm"
-      :end-bpm="cfg.endBpm"
-      :bars-per-cell="cfg.barsPerCell"
-      :tempo-map="tempoMap"
-      :playhead-bar="engine.visualBar"
-      @update:points="updatePoints"
-    />
   </div>
 </template>
