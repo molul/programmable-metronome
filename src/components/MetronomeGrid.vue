@@ -174,8 +174,14 @@ const playheadX = computed(() => {
     typeof props.playheadBar === "object"
       ? props.playheadBar.value
       : props.playheadBar;
+
   if (bar === null || bar === undefined) return 0;
-  return (bar / props.barsPerCell) * cellW.value;
+
+  // 1. Calculate the raw X position
+  const rawX = (bar / props.barsPerCell) * cellW.value;
+
+  // 2. Clamp it between 0 and the total width (w.value)
+  return Math.max(0, Math.min(w.value, rawX));
 });
 
 const currentCol = computed(() => {
