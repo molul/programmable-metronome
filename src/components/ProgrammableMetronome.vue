@@ -45,25 +45,30 @@ const tempoMap = computed(() => engine.buildTempoMap(points.value));
 function start() {
   engine.start(points.value, cfg.stopAtEnd, cfg.barsPerCell);
 }
+
+const isRunning = computed(() => engine.isRunning);
 </script>
 
 <template>
   <div
-    class="w-full max-w-[1080px] xl:max-w-[1280px] mx-auto rounded-md flex flex-col gap-4 bg-gray-700 relative"
+    class="w-full max-w-[1080px] xl:max-w-[1280px] mx-auto rounded-md flex flex-col gap-4 bg-gray-700 relative p-1"
   >
     <Button
-      :label="menuVisible ? 'Ocultar menú' : 'Mostrar menú'"
+      :label="menuVisible ? 'Close' : 'Show config'"
       @click="menuVisible = !menuVisible"
     />
 
-    <MetronomeControls v-show="menuVisible" v-model="cfg" />
+    <MetronomeControls
+      v-show="menuVisible"
+      v-model="cfg"
+      :is-running="engine.isRunning"
+    />
 
-    <div class="flex gap-2 justify-center">
-      <Button label="Start" @click="start" />
-      <Button label="Stop" @click="engine.stop()" />
+    <div class="flex gap-2 justify-between items-center">
+      <Button v-if="!isRunning.value" label="Start" @click="start" />
+      <Button v-if="isRunning.value" label="Stop" @click="engine.stop()" />
+      <span class="font-bold text-lg p-2">{{ engine.currentBpm }}</span>
     </div>
-
-    <div>Current tempo: {{ engine.currentBpm }}</div>
 
     <MetronomeGrid
       :cols="cols"

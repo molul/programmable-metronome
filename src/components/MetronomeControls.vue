@@ -1,9 +1,15 @@
 <script setup lang="ts">
-import { reactive, watch } from "vue";
+import { reactive, watch, type Ref } from "vue";
 import type { MetronomeConfig, MetronomePreset } from "../assets/types";
 import TempoVariables from "./TempoVariables.vue";
 import Button from "./Button.vue";
 import Label from "./Label.vue";
+
+interface Props {
+  isRunning: Ref<boolean>;
+}
+
+const props = defineProps<Props>();
 
 // Tell defineModel the type explicitly
 const model = defineModel<MetronomeConfig>();
@@ -74,41 +80,46 @@ watch(
 <template>
   <div
     v-if="model"
-    class="flex w-full flex-col rounded-lg p-3 gap-4 text-sm absolute top-10 left-0 z-50 bg-yellow-500"
+    class="flex w-full flex-col rounded-lg p-3 gap-4 text-sm absolute top-12 left-0 z-50 bg-gray-600"
   >
     <TempoVariables :model="model" @bump="(key, delta) => bump(key, delta)" />
 
-    <div class="flex gap-3 flex-wrap items-center bg-gray-600 p-2 rounded">
-      <div class="flex gap-2">
+    <hr />
+
+    <div class="flex gap-3 flex-wrap items-center rounded">
+      <div class="flex gap-2 justify-between w-full items-center">
         <Label label="Bars per cell" />
         <input
           type="number"
           v-model.number="model.barsPerCell"
-          class="border w-20 px-1"
+          class="border w-20 px-1 py-2 rounded-md"
         />
       </div>
 
-      <label class="flex gap-2 items-center">
+      <label class="flex gap-2 items-center py-2">
         <input type="checkbox" v-model="model.stopAtEnd" />
         <Label label="Stop at end" />
       </label>
     </div>
 
-    <div class="flex flex-wrap gap-2 w-full">
-      <Button label="Guardar Configuración" @click="saveConfig" />
+    <hr />
 
-      <div class="flex gap-2">
-        <Button label="Guardar Preset" @click="savePreset" />
+    <div class="flex flex-col lg:flex-row flex-wrap gap-3 w-full">
+      <Button label="Save default" @click="saveConfig" />
 
+      <Button label="Save preset" @click="savePreset" />
+
+      <div class="flex gap-2 items-center justify-between">
+        <Label label="Load preset" />
         <select
-          class="border px-1"
+          class="font-bold rounded-md py-2 bg-white text-black hover:bg-blue-500 active:bg-blue-600 transition-colors min-w-[200px]"
           @change="
             loadPreset(
               presets[($event.target as HTMLSelectElement)?.selectedIndex - 1]
             )
           "
         >
-          <option disabled selected>Seleccionar preset</option>
+          <option disabled selected>-</option>
           <option v-for="p in presets" :key="`preset-${p.name}`">
             {{ p.name }}
           </option>
