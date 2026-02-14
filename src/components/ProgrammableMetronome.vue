@@ -26,6 +26,8 @@ onMounted(() => {
 const cols = 16;
 const rows = 32;
 
+const menuVisible = ref(false);
+
 const points = ref<[TempoPoint, TempoPoint, TempoPoint]>([
   { bar: 0, bpm: cfg.startBpm },
   { bar: 8, bpm: cfg.maxBpm },
@@ -47,9 +49,14 @@ function start() {
 
 <template>
   <div
-    class="w-full max-w-[1080px] mx-auto p-3 rounded-md flex flex-col gap-4 bg-gray-700"
+    class="w-full max-w-[1080px] xl:max-w-[1280px] mx-auto rounded-md flex flex-col gap-4 bg-gray-700 relative"
   >
-    <MetronomeControls v-model="cfg" />
+    <Button
+      :label="menuVisible ? 'Ocultar menú' : 'Mostrar menú'"
+      @click="menuVisible = !menuVisible"
+    />
+
+    <MetronomeControls v-show="menuVisible" v-model="cfg" />
 
     <div class="flex gap-2 justify-center">
       <Button label="Start" @click="start" />

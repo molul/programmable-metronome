@@ -10,3 +10,7 @@ export interface MetronomeConfig {
   stopAtEnd: boolean;
   barsPerCell: number;
 }
+
+export interface MetronomePreset extends MetronomeConfig {
+  name: string;
+}

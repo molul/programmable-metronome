@@ -1,12 +1,9 @@
 <script setup lang="ts">
 import { reactive, watch } from "vue";
-import type { MetronomeConfig } from "../assets/types";
+import type { MetronomeConfig, MetronomePreset } from "../assets/types";
 import TempoVariables from "./TempoVariables.vue";
-
-// Strong type for presets
-interface MetronomePreset extends MetronomeConfig {
-  name: string;
-}
+import Button from "./Button.vue";
+import Label from "./Label.vue";
 
 // Tell defineModel the type explicitly
 const model = defineModel<MetronomeConfig>();
@@ -75,12 +72,15 @@ watch(
 </script>
 
 <template>
-  <div v-if="model" class="flex flex-col gap-2 text-sm">
+  <div
+    v-if="model"
+    class="flex w-full flex-col rounded-lg p-3 gap-4 text-sm absolute top-10 left-0 z-50 bg-yellow-500"
+  >
     <TempoVariables :model="model" @bump="(key, delta) => bump(key, delta)" />
 
-    <div class="flex gap-2 items-center bg-gray-600 p-2 rounded">
-      <div>
-        <span>Bars per cell</span>
+    <div class="flex gap-3 flex-wrap items-center bg-gray-600 p-2 rounded">
+      <div class="flex gap-2">
+        <Label label="Bars per cell" />
         <input
           type="number"
           v-model.number="model.barsPerCell"
@@ -90,30 +90,30 @@ watch(
 
       <label class="flex gap-2 items-center">
         <input type="checkbox" v-model="model.stopAtEnd" />
-        Stop at end
+        <Label label="Stop at end" />
       </label>
     </div>
 
-    <div class="flex gap-2 mt-2">
-      <button class="border px-2 py-1" @click="saveConfig">
-        Guardar Configuración
-      </button>
-      <button class="border px-2 py-1" @click="savePreset">
-        Guardar Preset
-      </button>
-      <select
-        class="border px-1"
-        @change="
-          loadPreset(
-            presets[($event.target as HTMLSelectElement)?.selectedIndex - 1]
-          )
-        "
-      >
-        <option disabled selected>Seleccionar preset</option>
-        <option v-for="p in presets" :key="`preset-${p.name}`">
-          {{ p.name }}
-        </option>
-      </select>
+    <div class="flex flex-wrap gap-2 w-full">
+      <Button label="Guardar Configuración" @click="saveConfig" />
+
+      <div class="flex gap-2">
+        <Button label="Guardar Preset" @click="savePreset" />
+
+        <select
+          class="border px-1"
+          @change="
+            loadPreset(
+              presets[($event.target as HTMLSelectElement)?.selectedIndex - 1]
+            )
+          "
+        >
+          <option disabled selected>Seleccionar preset</option>
+          <option v-for="p in presets" :key="`preset-${p.name}`">
+            {{ p.name }}
+          </option>
+        </select>
+      </div>
     </div>
   </div>
 </template>
