@@ -1,9 +1,9 @@
 <script setup lang="ts">
 interface Props {
-  label: string;
+  label: string
 }
 
-const props = defineProps<Props>();
+const props = defineProps<Props>()
 </script>
 
 <template>

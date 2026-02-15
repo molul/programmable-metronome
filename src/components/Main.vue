@@ -1,95 +1,59 @@
 <script setup lang="ts">
-import { reactive, computed, onMounted, watch } from "vue";
-import MetronomeGrid from "./MetronomeGrid.vue";
-import {
-  type TempoPoint,
-  useMetronomeEngine,
-} from "../composables/useMetronomeEngine";
-import type { MetronomeConfig } from "../assets/types";
-import Button from "./Button.vue";
-import Header from "./Header.vue";
+import MetronomeGrid from './MetronomeGrid.vue'
+import { useMetronomeEngine } from '../composables/useMetronomeEngine'
+import { useMetronomeStore } from '../stores/useMetronomeStore'
+import Button from './Button.vue'
+import Header from './Header.vue'
 
-let cfg = reactive<MetronomeConfig>({
-  startBpm: 100,
-  maxBpm: 140,
-  endBpm: 115,
-  stopAtEnd: true,
-  barsPerCell: 1,
-  tempoStep: "cell", // Default value
-  points: [
-    { bar: 0, bpm: 100 },
-    { bar: 8, bpm: 140 },
-    { bar: 12, bpm: 115 },
-  ],
-});
-
-onMounted(() => {
-  const saved = localStorage.getItem("metronomeConfig");
-  if (saved) {
-    const parsed = JSON.parse(saved);
-    Object.assign(cfg, parsed);
-  }
-});
-
-watch([() => cfg.startBpm, () => cfg.maxBpm, () => cfg.endBpm], ([s, m, e]) => {
-  cfg.points[0].bpm = s;
-  cfg.points[1].bpm = m;
-  cfg.points[2].bpm = e;
-});
-
-function updatePoints(p: [TempoPoint, TempoPoint, TempoPoint]) {
-  cfg.points = p;
-  cfg.startBpm = p[0].bpm;
-  cfg.maxBpm = p[1].bpm;
-  cfg.endBpm = p[2].bpm;
-}
-
-const engine = useMetronomeEngine();
-const tempoMap = computed(() => cfg.points);
+const store = useMetronomeStore()
+const engine = useMetronomeEngine()
 
 function start() {
-  // Pass the new tempoStep to the engine
-  engine.start(cfg.points, cfg.stopAtEnd, cfg.barsPerCell, cfg.tempoStep);
+  store.isRunning = true
+  engine.start(
+    store.config.points,
+    store.config.stopAtEnd,
+    store.config.barsPerCell,
+    store.config.tempoStep
+  )
 }
 
-const isRunning = computed(() => engine.isRunning.value);
+function stop() {
+  engine.stop()
+  store.isRunning = false
+}
+
+// Sync engine's internal running state back to store
+import { watch } from 'vue'
+watch(engine.isRunning, val => {
+  store.isRunning = val
+})
 </script>
 
 <template>
   <div
     class="w-full max-w-sm mx-auto lg:rounded-lg flex flex-col gap-0 bg-gray-800 relative p-0 m-auto"
   >
-    <Header v-model="cfg" :is-running="engine.isRunning" />
+    <Header />
 
     <div class="flex flex-col gap-4 w-full">
-      <MetronomeGrid
-        :cols="16"
-        :rows="37"
-        :start-bpm="cfg.startBpm"
-        :max-bpm="cfg.maxBpm"
-        :end-bpm="cfg.endBpm"
-        :bars-per-cell="cfg.barsPerCell"
-        :tempo-map="tempoMap"
-        :is-running="isRunning"
-        :playhead-bar="engine.visualBar"
-        @update:points="updatePoints"
-      />
+      <MetronomeGrid :cols="16" :rows="37" :playhead-bar="engine.visualBar" />
 
       <div class="flex gap-2 justify-center items-center px-3">
         <Button
-          v-if="!isRunning"
+          v-if="!store.isRunning"
           icon="solar:play-bold"
           size="big"
           shape="rounded"
           @click="start"
         />
         <Button
-          v-if="isRunning"
+          v-if="store.isRunning"
           icon="solar:stop-bold"
           type="alert"
           shape="rounded"
           size="big"
-          @click="engine.stop()"
+          @click="stop"
         />
       </div>
       <span class="font-bold text-2xl px-3 pb-4 text-white text-center">

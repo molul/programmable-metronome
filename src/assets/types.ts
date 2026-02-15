@@ -1,20 +1,20 @@
-export type TempoStep = "bar" | "cell";
+export type TempoStep = 'bar' | 'cell'
 
 export interface TempoPoint {
-  bar: number;
-  bpm: number;
+  bar: number
+  bpm: number
 }
 
 export interface MetronomeConfig {
-  startBpm: number;
-  maxBpm: number;
-  endBpm: number;
-  stopAtEnd: boolean;
-  barsPerCell: number;
-  tempoStep: TempoStep; // New Property
-  points: [TempoPoint, TempoPoint, TempoPoint];
+  startBpm: number
+  maxBpm: number
+  endBpm: number
+  stopAtEnd: boolean
+  barsPerCell: number
+  tempoStep: TempoStep // New Property
+  points: [TempoPoint, TempoPoint, TempoPoint]
 }
 
 export interface MetronomePreset extends MetronomeConfig {
-  name: string;
+  name: string
 }

@@ -1,251 +1,173 @@
 <script setup lang="ts">
-import { computed, ref, watch, onMounted, onUnmounted } from "vue";
-import type { TempoPoint } from "../composables/useMetronomeEngine";
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
+import { useMetronomeStore } from '../stores/useMetronomeStore'
+import type { TempoPoint } from '../composables/useMetronomeEngine'
 
 interface GridPoint {
-  col: number;
-  row: number;
+  col: number
+  row: number
 }
 
 interface Props {
-  cols: number;
-  rows: number;
-  startBpm: number;
-  maxBpm: number;
-  endBpm: number;
-  barsPerCell: number;
-  tempoMap: TempoPoint[]; // Change this from number[] to TempoPoint[]
-  playheadBar: any;
-  isRunning: boolean; // Add this
+  cols: number
+  rows: number
+  playheadBar: any
 }
 
-const props = defineProps<Props>();
-const emit = defineEmits<{
-  (e: "update:points", points: [TempoPoint, TempoPoint, TempoPoint]): void;
-}>();
+const props = defineProps<Props>()
+const store = useMetronomeStore()
 
-const tempoColumnWidth = 26;
-const padding = 16;
-
-const container = ref<HTMLDivElement | null>(null);
-const w = ref(300);
-const h = ref(500);
+const tempoColumnWidth = 26
+const padding = 16
+const container = ref<HTMLDivElement | null>(null)
+const w = ref(300)
+const h = ref(500)
 
 function resize() {
-  if (!container.value) return;
-  const cw = container.value.clientWidth;
-  w.value = cw - tempoColumnWidth - padding * 2;
-  h.value = Math.min(window.innerHeight * 0.7, cw * 1.5);
+  if (!container.value) return
+  const cw = container.value.clientWidth
+  w.value = cw - tempoColumnWidth - padding * 2
+  h.value = Math.min(window.innerHeight * 0.7, cw * 1.5)
 }
 
 onMounted(() => {
-  resize();
-  window.addEventListener("resize", resize);
-});
+  resize()
+  window.addEventListener('resize', resize)
+})
 
 onUnmounted(() => {
-  window.removeEventListener("resize", resize);
-});
+  window.removeEventListener('resize', resize)
+})
 
-const cellW = computed(() => w.value / props.cols);
-const cellH = computed(() => h.value / props.rows);
+const cellW = computed(() => w.value / props.cols)
+const cellH = computed(() => h.value / props.rows)
 
-// Modified for precision and symmetry
-const bpmToRow = (bpm: number) => {
-  const row = props.rows - (bpm - 40) / 5;
-  return Math.round(row);
-};
+const bpmToRow = (bpm: number) => Math.round(props.rows - (bpm - 40) / 5)
+const rowToBpm = (row: number) => 40 + (props.rows - row) * 5
 
-const rowToBpm = (row: number) => {
-  return 40 + (props.rows - row) * 5;
-};
+const points = ref<GridPoint[]>([])
 
-const points = ref<GridPoint[]>([
-  {
-    col: 0,
-    row: bpmToRow(props.startBpm),
-  },
-  {
-    col: 8,
-    row: bpmToRow(props.maxBpm),
-  },
-  {
-    col: 12,
-    row: bpmToRow(props.endBpm),
-  },
-]);
+const syncPointsFromStore = () => {
+  points.value = store.config.points.map(p => ({
+    col: p.bar,
+    row: bpmToRow(p.bpm)
+  }))
+}
 
-watch(
-  () => [props.startBpm, props.maxBpm, props.endBpm] as const,
-  ([s, m, e]) => {
-    const pts = points.value;
-    if (pts[0] && pts[1] && pts[2]) {
-      pts[0].row = bpmToRow(s);
-      pts[1].row = bpmToRow(m);
-      pts[2].row = bpmToRow(e);
-    }
-  }
-);
-const dragging = ref<number | null>(null);
+watch(() => store.config.points, syncPointsFromStore, {
+  deep: true,
+  immediate: true
+})
+
+const dragging = ref<number | null>(null)
 
 const down = (i: number, e: MouseEvent | TouchEvent) => {
-  // BLOCK: If metronome is playing, don't allow interaction
-  if (props.isRunning) return;
-
-  if (e.cancelable) e.preventDefault();
-  dragging.value = i;
-};
+  if (store.isRunning) return
+  if (e.cancelable) e.preventDefault()
+  dragging.value = i
+}
 
 function up() {
-  if (dragging.value === null) return;
-
-  emit(
-    "update:points",
-    points.value.map((p) => ({
+  if (dragging.value === null) return
+  store.updatePoints(
+    points.value.map(p => ({
       bar: p.col,
-      bpm: rowToBpm(p.row),
+      bpm: rowToBpm(p.row)
     })) as [TempoPoint, TempoPoint, TempoPoint]
-  );
-  dragging.value = null;
+  )
+  dragging.value = null
 }
 
 function move(e: MouseEvent | TouchEvent) {
-  if (props.isRunning || dragging.value === null || !container.value) return;
+  if (store.isRunning || dragging.value === null || !container.value) return
 
-  const [p0, p1, p2] = points.value;
-  if (!p0 || !p1 || !p2) return;
+  const p0 = points.value[0]
+  const p1 = points.value[1]
+  const p2 = points.value[2]
 
-  const svgEl = container.value.querySelector("svg");
-  if (!svgEl) return;
+  const svgEl = container.value.querySelector('svg')
+  if (!svgEl || !p0 || !p1 || !p2) return
 
-  const rect = svgEl.getBoundingClientRect();
+  const rect = svgEl.getBoundingClientRect()
 
-  let clientX = 0;
-  let clientY = 0;
+  // Fix: Object is possibly 'undefined' for touches
+  let clientX = 0
+  let clientY = 0
 
-  if ("touches" in e) {
-    const touch = e.touches[0];
-    if (!touch) return;
-    clientX = touch.clientX;
-    clientY = touch.clientY;
+  if ('touches' in e) {
+    const touch = e.touches[0]
+    if (!touch) return // Guard against empty touch list
+    clientX = touch.clientX
+    clientY = touch.clientY
   } else {
-    clientX = (e as MouseEvent).clientX;
-    clientY = (e as MouseEvent).clientY;
+    clientX = (e as MouseEvent).clientX
+    clientY = (e as MouseEvent).clientY
   }
 
-  const relativeX = clientX - rect.left;
-  const relativeY = clientY - rect.top;
+  const internalX = ((clientX - rect.left) / rect.width) * w.value
+  const internalY = ((clientY - rect.top) / rect.height) * h.value
 
-  const internalX = (relativeX / rect.width) * w.value;
-  const internalY = (relativeY / rect.height) * h.value;
+  let col = Math.max(0, Math.min(props.cols - 1, Math.floor(internalX / cellW.value)))
+  let row = Math.max(0, Math.min(props.rows, Math.round(internalY / cellH.value)))
 
-  let col = Math.floor(internalX / cellW.value);
-  let row = Math.round(internalY / cellH.value);
-
-  // Initial clamping to grid boundaries
-  col = Math.max(0, Math.min(props.cols - 1, col));
-  row = Math.max(0, Math.min(props.rows, row));
-
-  // Logic constraints for Tempo Points
   if (dragging.value === 0) {
-    // Horizontal: Must be left of Point 1
-    col = Math.min(col, p1.col - 1);
-    // Vertical: Start BPM <= Max BPM AND Start BPM <= End BPM
-    row = Math.max(p1.row, p2.row, row);
+    col = Math.min(col, p1.col - 1)
+    row = Math.max(p1.row, p2.row, row)
   } else if (dragging.value === 1) {
-    // Horizontal: Must be between Point 0 and Point 2
-    col = Math.max(p0.col + 1, Math.min(col, p2.col - 1));
-    // Vertical: Max BPM must be highest
-    row = Math.min(row, p0.row, p2.row);
+    col = Math.max(p0.col + 1, Math.min(col, p2.col - 1))
+    row = Math.min(row, p0.row, p2.row)
   } else if (dragging.value === 2) {
-    // Horizontal: Must be right of Point 1
-    col = Math.max(col, p1.col + 1);
-    // Vertical: End BPM must be between Start BPM and Max BPM
-    // (Meaning row must be between p1.row and p0.row)
-    row = Math.max(p1.row, Math.min(p0.row, row));
+    col = Math.max(col, p1.col + 1)
+    row = Math.max(p1.row, Math.min(p0.row, row))
   }
 
-  if (points.value[dragging.value])
-    points.value[dragging.value] = {
-      col,
-      row,
-    };
+  points.value[dragging.value] = { col, row }
 }
 
 const svgPt = (p: GridPoint) => ({
   x: p.col * cellW.value,
-  y: p.row * cellH.value,
-});
+  y: p.row * cellH.value
+})
 
 const draggedPointPos = computed(() => {
-  // 1. Check if dragging is a number (not null)
-  if (dragging.value === null) return null;
-
-  // 2. Grab the point
-  const pt = points.value[dragging.value];
-
-  // 3. Ensure the point exists before calling svgPt
-  if (!pt) return null;
-
-  return svgPt(pt);
-});
+  if (dragging.value === null) return null
+  const pt = points.value[dragging.value]
+  // Fix: Type narrowing for svgPt
+  if (!pt) return null
+  return svgPt(pt)
+})
 
 const segments = computed(() => {
-  const [p0, p1, p2] = points.value;
-  if (!p0 || !p1 || !p2) return [];
+  const p0 = points.value[0]
+  const p1 = points.value[1]
+  const p2 = points.value[2]
+  if (!p0 || !p1 || !p2) return []
 
-  const pt0 = svgPt(p0);
-  const pt1 = svgPt(p1);
-  const pt2 = svgPt(p2);
-
-  const first = { x: 0, y: pt0.y };
-  const last = { x: w.value, y: pt2.y };
+  const pt0 = svgPt(p0)
+  const pt1 = svgPt(p1)
+  const pt2 = svgPt(p2)
 
   return [
-    { x1: first.x, y1: first.y, x2: pt0.x, y2: pt0.y },
+    { x1: 0, y1: pt0.y, x2: pt0.x, y2: pt0.y },
     { x1: pt0.x, y1: pt0.y, x2: pt1.x, y2: pt1.y },
     { x1: pt1.x, y1: pt1.y, x2: pt2.x, y2: pt2.y },
-    { x1: pt2.x, y1: pt2.y, x2: last.x, y2: last.y },
-  ];
-});
+    { x1: pt2.x, y1: pt2.y, x2: w.value, y2: pt2.y }
+  ]
+})
 
 const playheadX = computed(() => {
   const bar =
-    typeof props.playheadBar === "object"
-      ? props.playheadBar.value
-      : props.playheadBar;
-
-  if (bar === null || bar === undefined) return 0;
-
-  // 1. Calculate the raw X position
-  const rawX = (bar / props.barsPerCell) * cellW.value;
-
-  // 2. Clamp it between 0 and the total width (w.value)
-  return Math.max(0, Math.min(w.value, rawX));
-});
+    typeof props.playheadBar === 'object' ? props.playheadBar.value : props.playheadBar
+  if (bar === null || bar === undefined) return 0
+  return Math.max(0, Math.min(w.value, (bar / store.config.barsPerCell) * cellW.value))
+})
 
 const currentCol = computed(() => {
   const bar =
-    typeof props.playheadBar === "object"
-      ? props.playheadBar.value
-      : props.playheadBar;
-  if (bar === null || bar === undefined) return null;
-  return Math.min(props.cols - 1, Math.floor(bar / props.barsPerCell));
-});
-
-watch(
-  () => props.tempoMap,
-  (newPoints) => {
-    // Check if newPoints exists and is the array of 3 objects we expect
-    if (newPoints && Array.isArray(newPoints) && newPoints.length === 3) {
-      points.value = newPoints.map((p) => ({
-        col: p.bar,
-        row: bpmToRow(p.bpm),
-      }));
-    }
-  },
-  { deep: true, immediate: true }
-);
+    typeof props.playheadBar === 'object' ? props.playheadBar.value : props.playheadBar
+  if (bar === null || bar === undefined) return null
+  return Math.min(props.cols - 1, Math.floor(bar / store.config.barsPerCell))
+})
 </script>
 
 <template>
@@ -253,29 +175,25 @@ watch(
     <div class="flex flex-col select-none z-10">
       <div
         v-for="r in rows"
-        :key="`label-${r}`"
-        class="text-[10px] leading-0 text-white flex items-end font-bold justify-end pr-1 border-b border-white relative"
-        :style="{
-          width: tempoColumnWidth + 'px',
-          height: cellH + 'px',
-          lineHeight: '12px',
-        }"
+        :key="r"
+        class="text-[10px] text-white flex items-end justify-end pr-1 border-b border-white relative"
+        :style="{ width: tempoColumnWidth + 'px', height: cellH + 'px' }"
       >
-        <div class="absolute top-[0.5px] left-0 w-full flex">
+        <div class="absolute top-0 left-0 w-full flex">
           <div
-            v-if="40 + (rows - r) * 5 === startBpm"
-            :class="'border-t-4 border-green-500 w-full'"
+            v-if="rowToBpm(r - 1) === store.config.startBpm"
+            class="border-t-4 border-green-500 w-full"
           />
           <div
-            v-if="40 + (rows - r) * 5 === maxBpm"
-            :class="'border-t-4 border-red-500 w-full'"
+            v-if="rowToBpm(r - 1) === store.config.maxBpm"
+            class="border-t-4 border-red-500 w-full"
           />
           <div
-            v-if="40 + (rows - r) * 5 === endBpm"
-            :class="'border-t-4 border-yellow-500 w-full'"
+            v-if="rowToBpm(r - 1) === store.config.endBpm"
+            class="border-t-4 border-yellow-500 w-full"
           />
         </div>
-        <span class="-mb-0.25">{{ 40 + (rows - r) * 5 }}</span>
+        <span>{{ rowToBpm(r - 1) }}</span>
       </div>
     </div>
     <div class="w-full bg-gray-700">
@@ -287,13 +205,12 @@ watch(
         @mouseleave="up"
         @touchmove.prevent="move"
         @touchend="up"
-        class="select-none touch-none w-full"
-        style="overflow: visible"
+        class="w-full overflow-visible select-none touch-none"
       >
         <g class="stroke-gray-500">
           <line
             v-for="c in cols + 1"
-            :key="`col-${c}`"
+            :key="c"
             :x1="(c - 1) * cellW"
             y1="0"
             :x2="(c - 1) * cellW"
@@ -301,7 +218,7 @@ watch(
           />
           <line
             v-for="r in rows + 1"
-            :key="`row-${r}`"
+            :key="r"
             x1="0"
             :y1="(r - 1) * cellH"
             :x2="w"
@@ -336,13 +253,13 @@ watch(
           :y2="draggedPointPos.y"
           stroke-width="2"
           stroke-dasharray="6 6"
-          class="pointer-events-none stroke-blue-300"
+          class="stroke-blue-300 pointer-events-none"
         />
 
-        <g stroke-width="2" class="stroke-white z-50">
+        <g stroke-width="2" class="stroke-white">
           <line
             v-for="(s, i) in segments"
-            :key="`seg-${i}`"
+            :key="i"
             :x1="s.x1"
             :y1="s.y1"
             :x2="s.x2"
@@ -352,17 +269,13 @@ watch(
 
         <circle
           v-for="(p, i) in points"
-          :key="`pt-${i}`"
+          :key="i"
           :cx="svgPt(p).x"
           :cy="svgPt(p).y"
           r="12"
           :class="[
             'cursor-pointer',
-            {
-              'fill-green-500': i === 0,
-              'fill-red-500': i === 1,
-              'fill-yellow-500': i === 2,
-            },
+            i === 0 ? 'fill-green-500' : i === 1 ? 'fill-red-500' : 'fill-yellow-500'
           ]"
           @mousedown="down(i, $event)"
           @touchstart.prevent="down(i, $event)"
