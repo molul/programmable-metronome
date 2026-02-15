@@ -60,9 +60,18 @@ const rowToBpm = (row: number) => {
 };
 
 const points = ref<GridPoint[]>([
-  { col: 0, row: bpmToRow(props.startBpm) },
-  { col: 8, row: bpmToRow(props.maxBpm) },
-  { col: 12, row: bpmToRow(props.endBpm) },
+  {
+    col: 0,
+    row: bpmToRow(props.startBpm),
+  },
+  {
+    col: 8,
+    row: bpmToRow(props.maxBpm),
+  },
+  {
+    col: 12,
+    row: bpmToRow(props.endBpm),
+  },
 ]);
 
 watch(
@@ -152,7 +161,11 @@ function move(e: MouseEvent | TouchEvent) {
     row = Math.max(p1.row, Math.min(p0.row, row));
   }
 
-  points.value[dragging.value] = { col, row };
+  if (points.value[dragging.value])
+    points.value[dragging.value] = {
+      col,
+      row,
+    };
 }
 
 const svgPt = (p: GridPoint) => ({
@@ -234,7 +247,7 @@ watch(
         {{ 40 + (rows - r) * 5 }}
       </div>
     </div>
-
+    {{ points }}
     <div class="w-full bg-gray-700">
       <svg
         :width="w"
@@ -281,8 +294,8 @@ watch(
           y1="0"
           :x2="playheadX"
           :y2="h"
-          stroke="red"
           stroke-width="2"
+          class="stroke-green-500"
         />
 
         <g stroke-width="2" class="stroke-white z-50">
@@ -302,7 +315,14 @@ watch(
           :cx="svgPt(p).x"
           :cy="svgPt(p).y"
           r="12"
-          class="cursor-pointer fill-blue-300"
+          :class="[
+            'cursor-pointer',
+            {
+              'fill-green-500': i === 0,
+              'fill-red-500': i === 1,
+              'fill-yellow-500': i === 2,
+            },
+          ]"
           @mousedown="down(i, $event)"
           @touchstart.prevent="down(i, $event)"
         />

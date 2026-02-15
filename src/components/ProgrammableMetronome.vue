@@ -9,7 +9,7 @@ import type { MetronomeConfig } from "../assets/types";
 import Button from "./Button.vue";
 import Header from "./Header.vue";
 
-const cfg = reactive<MetronomeConfig>({
+let cfg = reactive<MetronomeConfig>({
   startBpm: 100,
   maxBpm: 140,
   endBpm: 115,
