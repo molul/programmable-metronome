@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import ProgrammableMetronome from "./components/ProgrammableMetronome.vue";
+import Main from "./components/Main.vue";
 </script>
 
 <template>
-  <ProgrammableMetronome />
+  <Main />
 </template>
 
 <style scoped></style>

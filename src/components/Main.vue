@@ -57,11 +57,11 @@ const isRunning = computed(() => engine.isRunning.value);
 
 <template>
   <div
-    class="w-full max-w-[1080px] mx-auto lg:rounded-lg flex flex-col gap-0 bg-gray-800 relative p-0 h-full"
+    class="w-full max-w-sm mx-auto lg:rounded-lg flex flex-col gap-0 bg-gray-800 relative p-0 m-auto"
   >
     <Header v-model="cfg" :is-running="engine.isRunning" />
 
-    <div class="flex flex-col gap-4">
+    <div class="flex flex-col gap-4 w-full">
       <MetronomeGrid
         :cols="16"
         :rows="37"

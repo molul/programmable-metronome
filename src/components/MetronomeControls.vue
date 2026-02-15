@@ -159,10 +159,11 @@ watch(
           @click="loadDefault"
         />
       </div>
-      <div class="flex gap-4 flex-col lg:flex-row">
+      <div class="flex gap-4 flex-col w-full">
         <Button
           icon="solar:diskette-linear"
           label="Save new preset"
+          :full-width="true"
           @click="savePreset"
         />
         <div
