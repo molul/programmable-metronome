@@ -16,12 +16,23 @@ const presets = reactive<MetronomePreset[]>(
 );
 
 function bump(key: keyof MetronomeConfig, delta: number) {
-  if (model.value && typeof model.value[key] === "number") {
-    const currentValue = model.value[key] as number;
-    (model.value[key] as number) = Math.min(
-      225,
-      Math.max(40, currentValue + delta)
-    );
+  if (!model.value || typeof model.value[key] !== "number") return;
+
+  const current = model.value[key] as number;
+  const next = Math.min(225, Math.max(40, current + delta));
+
+  // Destructure for easier comparison
+  const { startBpm, maxBpm, endBpm } = model.value;
+
+  if (key === "startBpm") {
+    // Start cannot exceed Max or End
+    model.value.startBpm = Math.min(next, maxBpm, endBpm);
+  } else if (key === "maxBpm") {
+    // Max cannot be lower than Start or End
+    model.value.maxBpm = Math.max(next, startBpm, endBpm);
+  } else if (key === "endBpm") {
+    // End must be between Start and Max
+    model.value.endBpm = Math.max(startBpm, Math.min(next, maxBpm));
   }
 }
 
