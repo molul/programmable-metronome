@@ -84,7 +84,11 @@ watch(
     v-if="model"
     class="flex w-full flex-col rounded-lg p-4 gap-4 text-sm bg-gray-700 transition-all"
   >
-    <TempoVariables :model="model" @bump="(key, delta) => bump(key, delta)" />
+    <TempoVariables
+      :model="model"
+      @bump="(key, delta) => bump(key, delta)"
+      :is-running="props.isRunning.value"
+    />
 
     <hr class="border-gray-500" />
 

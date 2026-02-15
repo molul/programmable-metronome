@@ -5,6 +5,7 @@ import Label from "./Label.vue";
 
 interface Props {
   model: MetronomeConfig;
+  isRunning: boolean;
 }
 
 const props = defineProps<Props>();
@@ -33,11 +34,21 @@ const emit = defineEmits<{
       <Label :label="labels[key]" />
 
       <div class="flex items-center gap-2">
-        <Button label="-5" @click="emit('bump', key, -5)" class="w-14" />
+        <Button
+          label="-5"
+          @click="emit('bump', key, -5)"
+          class="w-14"
+          :disabled="props.isRunning"
+        />
         <div class="w-12 text-center">
           {{ props.model[key] }}
         </div>
-        <Button label="+5" @click="emit('bump', key, 5)" class="w-14" />
+        <Button
+          label="+5"
+          @click="emit('bump', key, 5)"
+          class="w-14"
+          :disabled="props.isRunning"
+        />
       </div>
     </div>
   </div>

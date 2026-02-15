@@ -16,6 +16,7 @@ interface Props {
   barsPerCell: number;
   tempoMap: TempoPoint[]; // Change this from number[] to TempoPoint[]
   playheadBar: any;
+  isRunning: boolean; // Add this
 }
 
 const props = defineProps<Props>();
@@ -88,6 +89,9 @@ watch(
 const dragging = ref<number | null>(null);
 
 const down = (i: number, e: MouseEvent | TouchEvent) => {
+  // BLOCK: If metronome is playing, don't allow interaction
+  if (props.isRunning) return;
+
   if (e.cancelable) e.preventDefault();
   dragging.value = i;
 };
@@ -106,7 +110,7 @@ function up() {
 }
 
 function move(e: MouseEvent | TouchEvent) {
-  if (dragging.value === null || !container.value) return;
+  if (props.isRunning || dragging.value === null || !container.value) return;
 
   const [p0, p1, p2] = points.value;
   if (!p0 || !p1 || !p2) return;

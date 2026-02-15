@@ -8,6 +8,7 @@ interface Props {
   size?: "normal" | "big";
   type?: "primary" | "secondary" | "text" | "alert";
   shape?: "rounded" | "square";
+  disabled?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -15,6 +16,7 @@ const props = withDefaults(defineProps<Props>(), {
   size: "normal",
   type: "primary",
   shape: "square",
+  disabled: false,
 });
 </script>
 
@@ -37,6 +39,7 @@ const props = withDefaults(defineProps<Props>(), {
       { 'rounded-full p-4 aspect-square': props.shape === 'rounded' },
       { 'rounded-md px-4 py-2': props.shape === 'square' },
     ]"
+    :disabled="disabled"
   >
     <Icon
       v-if="props.icon"

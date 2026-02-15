@@ -70,6 +70,7 @@ const isRunning = computed(() => engine.isRunning.value);
         :end-bpm="cfg.endBpm"
         :bars-per-cell="cfg.barsPerCell"
         :tempo-map="tempoMap"
+        :is-running="isRunning"
         :playhead-bar="engine.visualBar"
         @update:points="updatePoints"
       />
