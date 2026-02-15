@@ -14,7 +14,7 @@ interface Props {
   maxBpm: number;
   endBpm: number;
   barsPerCell: number;
-  tempoMap: number[];
+  tempoMap: TempoPoint[]; // Change this from number[] to TempoPoint[]
   playheadBar: any;
 }
 
@@ -123,23 +123,33 @@ function move(e: MouseEvent | TouchEvent) {
   const relativeX = clientX - rect.left;
   const relativeY = clientY - rect.top;
 
-  // Normalized coordinate calculation
   const internalX = (relativeX / rect.width) * w.value;
   const internalY = (relativeY / rect.height) * h.value;
 
   let col = Math.floor(internalX / cellW.value);
-  let row = Math.round(internalY / cellH.value); // Use round to snap to lines better
+  let row = Math.round(internalY / cellH.value);
 
-  // Modified clamping to allow reaching the bottom (props.rows)
+  // Initial clamping to grid boundaries
   col = Math.max(0, Math.min(props.cols - 1, col));
   row = Math.max(0, Math.min(props.rows, row));
 
+  // Logic constraints for Tempo Points
   if (dragging.value === 0) {
+    // Horizontal: Must be left of Point 1
     col = Math.min(col, p1.col - 1);
+    // Vertical: Start BPM <= Max BPM AND Start BPM <= End BPM
+    row = Math.max(p1.row, p2.row, row);
   } else if (dragging.value === 1) {
+    // Horizontal: Must be between Point 0 and Point 2
     col = Math.max(p0.col + 1, Math.min(col, p2.col - 1));
+    // Vertical: Max BPM must be highest
+    row = Math.min(row, p0.row, p2.row);
   } else if (dragging.value === 2) {
+    // Horizontal: Must be right of Point 1
     col = Math.max(col, p1.col + 1);
+    // Vertical: End BPM must be between Start BPM and Max BPM
+    // (Meaning row must be between p1.row and p0.row)
+    row = Math.max(p1.row, Math.min(p0.row, row));
   }
 
   points.value[dragging.value] = { col, row };
@@ -192,6 +202,20 @@ const currentCol = computed(() => {
   if (bar === null || bar === undefined) return null;
   return Math.min(props.cols - 1, Math.floor(bar / props.barsPerCell));
 });
+
+watch(
+  () => props.tempoMap,
+  (newPoints) => {
+    // Check if newPoints exists and is the array of 3 objects we expect
+    if (newPoints && Array.isArray(newPoints) && newPoints.length === 3) {
+      points.value = newPoints.map((p) => ({
+        col: p.bar,
+        row: bpmToRow(p.bpm),
+      }));
+    }
+  },
+  { deep: true, immediate: true }
+);
 </script>
 
 <template>

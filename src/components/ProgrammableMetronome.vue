@@ -1,62 +1,58 @@
 <script setup lang="ts">
-import { reactive, ref, computed, onMounted, watch } from "vue";
+import { reactive, computed, onMounted, watch } from "vue";
 import MetronomeGrid from "./MetronomeGrid.vue";
 import {
   type TempoPoint,
   useMetronomeEngine,
 } from "../composables/useMetronomeEngine";
+import type { MetronomeConfig } from "../assets/types";
 import Button from "./Button.vue";
 import Header from "./Header.vue";
 
-const cfg = reactive({
+// 1. Unified configuration including the points array
+const cfg = reactive<MetronomeConfig>({
   startBpm: 100,
   maxBpm: 140,
   endBpm: 115,
   stopAtEnd: true,
   barsPerCell: 1,
+  points: [
+    { bar: 0, bpm: 100 },
+    { bar: 8, bpm: 140 },
+    { bar: 12, bpm: 115 },
+  ],
 });
-
-const points = ref<[TempoPoint, TempoPoint, TempoPoint]>([
-  { bar: 0, bpm: cfg.startBpm },
-  { bar: 8, bpm: cfg.maxBpm },
-  { bar: 12, bpm: cfg.endBpm },
-]);
 
 onMounted(() => {
   const saved = localStorage.getItem("metronomeConfig");
   if (saved) {
-    Object.assign(cfg, JSON.parse(saved));
-    // Immediately sync points with loaded config
-    points.value = [
-      { bar: 0, bpm: cfg.startBpm },
-      { bar: 8, bpm: cfg.maxBpm },
-      { bar: 12, bpm: cfg.endBpm },
-    ];
+    const parsed = JSON.parse(saved);
+    Object.assign(cfg, parsed);
   }
 });
 
-// Sync: When config changes (via menu), update points
+// 2. Sync BPM individual inputs to the points array
 watch([() => cfg.startBpm, () => cfg.maxBpm, () => cfg.endBpm], ([s, m, e]) => {
-  points.value[0].bpm = s;
-  points.value[1].bpm = m;
-  points.value[2].bpm = e;
+  cfg.points[0].bpm = s;
+  cfg.points[1].bpm = m;
+  cfg.points[2].bpm = e;
 });
 
-// Sync: When points change (via dragging), update config
+// 3. Update points (triggered by grid dragging)
 function updatePoints(p: [TempoPoint, TempoPoint, TempoPoint]) {
-  points.value = p;
+  cfg.points = p;
   cfg.startBpm = p[0].bpm;
   cfg.maxBpm = p[1].bpm;
   cfg.endBpm = p[2].bpm;
 }
 
 const engine = useMetronomeEngine();
-const tempoMap = computed(() =>
-  engine.buildTempoMap(points.value, cfg.barsPerCell)
-);
+
+// 4. IMPORTANT: Keep tempoMap as TempoPoint[] for the Grid logic
+const tempoMap = computed(() => cfg.points);
 
 function start() {
-  engine.start(points.value, cfg.stopAtEnd, cfg.barsPerCell);
+  engine.start(cfg.points, cfg.stopAtEnd, cfg.barsPerCell);
 }
 
 const isRunning = computed(() => engine.isRunning.value);
@@ -80,6 +76,7 @@ const isRunning = computed(() => engine.isRunning.value);
         :playhead-bar="engine.visualBar"
         @update:points="updatePoints"
       />
+
       <div class="flex gap-2 justify-center items-center px-3">
         <Button
           v-if="!isRunning"
