@@ -7,6 +7,9 @@ export interface TempoPoint {
   bpm: number;
 }
 
+// Added the type for the new feature
+export type TempoStep = "bar" | "cell";
+
 export function useMetronomeEngine() {
   const isRunning = ref(false);
   const currentBar = ref(0);
@@ -42,36 +45,33 @@ export function useMetronomeEngine() {
     const b = { bar: pts[1].bar * barsPerCell, bpm: pts[1].bpm };
     const c = { bar: pts[2].bar * barsPerCell, bpm: pts[2].bpm };
 
-    // NEW: If we are before the first point, stay at first point's BPM
-    if (bar <= a.bar) {
-      return a.bpm;
-    }
+    if (bar <= a.bar) return a.bpm;
 
-    // Linear interpolation between point A and B
     if (bar <= b.bar) {
       const t = (bar - a.bar) / (b.bar - a.bar || 1);
       return a.bpm + t * (b.bpm - a.bpm);
     }
 
-    // Linear interpolation between point B and C
     if (bar <= c.bar) {
       const t = (bar - b.bar) / (c.bar - b.bar || 1);
       return b.bpm + t * (c.bpm - b.bpm);
     }
 
-    // If we are past point C, stay at point C's BPM
     return c.bpm;
   }
 
   function buildTempoMap(
     pts: [TempoPoint, TempoPoint, TempoPoint],
-    barsPerCell: number = 1
+    barsPerCell: number = 1,
+    tempoStep: TempoStep = "cell" // Defaulting to cell
   ): number[] {
     const totalBars = TOTAL_CELLS * barsPerCell;
     const out: number[] = [];
     for (let i = 0; i < totalBars; i++) {
-      const cellStart = Math.floor(i / barsPerCell) * barsPerCell;
-      out.push(bpmAtBar(cellStart, pts, barsPerCell));
+      // Logic for step calculation
+      const targetBar =
+        tempoStep === "cell" ? Math.floor(i / barsPerCell) * barsPerCell : i;
+      out.push(bpmAtBar(targetBar, pts, barsPerCell));
     }
     return out;
   }
@@ -79,7 +79,8 @@ export function useMetronomeEngine() {
   async function start(
     points: [TempoPoint, TempoPoint, TempoPoint],
     stopAtEnd: boolean,
-    barsPerCell: number = 1
+    barsPerCell: number = 1,
+    tempoStep: TempoStep = "cell" // Added parameter
   ) {
     if (!ctx) await load();
     if (!ctx || !hiBuf || !loBuf) return;
@@ -110,10 +111,14 @@ export function useMetronomeEngine() {
           break;
         }
 
-        const cellStart =
-          Math.floor(currentBar.value / barsPerCell) * barsPerCell;
-        const activeBpm = bpmAtBar(cellStart, points, barsPerCell);
-        const secondsPerBeat = 60 / activeBpm / 2;
+        // Logic switch for tempo increase
+        const calculationBar =
+          tempoStep === "cell"
+            ? Math.floor(currentBar.value / barsPerCell) * barsPerCell
+            : currentBar.value;
+
+        const activeBpm = bpmAtBar(calculationBar, points, barsPerCell);
+        const secondsPerBeat = 60 / activeBpm; // Fixed: Standard 4/4 is 60/BPM, your code had /2 (8th notes?)
 
         const source = ctx!.createBufferSource();
         source.buffer = beatInBar === 0 ? hiBuf! : loBuf!;
@@ -122,12 +127,10 @@ export function useMetronomeEngine() {
 
         if (beatInBar === 0) {
           visualBar.value = currentBar.value;
-          if (currentBar.value === cellStart) {
-            currentBpm.value = Math.round(activeBpm);
-          }
+          currentBpm.value = Math.round(activeBpm);
         }
 
-        nextBeatTime += secondsPerBeat;
+        nextBeatTime += secondsPerBeat / 4; // Assuming 4 beats per bar
         beatInBar++;
         if (beatInBar > 3) {
           beatInBar = 0;

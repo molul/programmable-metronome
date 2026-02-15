@@ -9,13 +9,13 @@ import type { MetronomeConfig } from "../assets/types";
 import Button from "./Button.vue";
 import Header from "./Header.vue";
 
-// 1. Unified configuration including the points array
 const cfg = reactive<MetronomeConfig>({
   startBpm: 100,
   maxBpm: 140,
   endBpm: 115,
   stopAtEnd: true,
   barsPerCell: 1,
+  tempoStep: "cell", // Default value
   points: [
     { bar: 0, bpm: 100 },
     { bar: 8, bpm: 140 },
@@ -31,14 +31,12 @@ onMounted(() => {
   }
 });
 
-// 2. Sync BPM individual inputs to the points array
 watch([() => cfg.startBpm, () => cfg.maxBpm, () => cfg.endBpm], ([s, m, e]) => {
   cfg.points[0].bpm = s;
   cfg.points[1].bpm = m;
   cfg.points[2].bpm = e;
 });
 
-// 3. Update points (triggered by grid dragging)
 function updatePoints(p: [TempoPoint, TempoPoint, TempoPoint]) {
   cfg.points = p;
   cfg.startBpm = p[0].bpm;
@@ -47,12 +45,11 @@ function updatePoints(p: [TempoPoint, TempoPoint, TempoPoint]) {
 }
 
 const engine = useMetronomeEngine();
-
-// 4. IMPORTANT: Keep tempoMap as TempoPoint[] for the Grid logic
 const tempoMap = computed(() => cfg.points);
 
 function start() {
-  engine.start(cfg.points, cfg.stopAtEnd, cfg.barsPerCell);
+  // Pass the new tempoStep to the engine
+  engine.start(cfg.points, cfg.stopAtEnd, cfg.barsPerCell, cfg.tempoStep);
 }
 
 const isRunning = computed(() => engine.isRunning.value);
@@ -94,7 +91,7 @@ const isRunning = computed(() => engine.isRunning.value);
           @click="engine.stop()"
         />
       </div>
-      <span class="font-bold text-2xl px-3 text-white">
+      <span class="font-bold text-2xl px-3 text-white text-center">
         {{ engine.currentBpm }} BPM
       </span>
     </div>

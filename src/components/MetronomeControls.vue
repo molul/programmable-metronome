@@ -48,14 +48,9 @@ function savePreset() {
   if (!name || !model.value) return;
 
   const preset: MetronomePreset = {
+    ...model.value, // Spread the full model to ensure all fields are captured
     name,
-    // We save the points array which contains the bar positions
     points: JSON.parse(JSON.stringify(model.value.points)),
-    startBpm: model.value.startBpm,
-    maxBpm: model.value.maxBpm,
-    endBpm: model.value.endBpm,
-    stopAtEnd: model.value.stopAtEnd,
-    barsPerCell: model.value.barsPerCell,
   };
 
   presets.push(preset);
@@ -65,17 +60,16 @@ function savePreset() {
 function loadPreset(p: MetronomePreset | MetronomeConfig | undefined) {
   if (!p || !model.value) return;
 
-  // Restore the grid points (the horizontal positions)
   if (p.points) {
     model.value.points = JSON.parse(JSON.stringify(p.points));
   }
 
-  // Restore individual values
   model.value.startBpm = p.startBpm;
   model.value.maxBpm = p.maxBpm;
   model.value.endBpm = p.endBpm;
   model.value.stopAtEnd = p.stopAtEnd;
   model.value.barsPerCell = p.barsPerCell;
+  model.value.tempoStep = p.tempoStep || "cell"; // Fallback for old configs
 }
 
 watch(
@@ -91,8 +85,10 @@ watch(
     class="flex w-full flex-col rounded-lg p-4 gap-4 text-sm bg-gray-700 transition-all"
   >
     <TempoVariables :model="model" @bump="(key, delta) => bump(key, delta)" />
+
     <hr class="border-gray-500" />
-    <div class="flex gap-3 flex-wrap items-center rounded">
+
+    <div class="flex flex-col gap-4">
       <div class="flex gap-2 justify-between w-full items-center">
         <Label label="Bars per cell" />
         <div class="flex gap-2 items-center">
@@ -103,12 +99,43 @@ watch(
           <Button label="+1" @click="model.barsPerCell++" class="w-14" />
         </div>
       </div>
+
+      <div class="flex gap-2 justify-between w-full items-center">
+        <Label label="Increase tempo" />
+        <div class="flex bg-gray-800 p-1 rounded-md">
+          <button
+            @click="model.tempoStep = 'bar'"
+            :class="[
+              'px-3 py-1 rounded font-bold transition-colors cursor-pointer',
+              model.tempoStep === 'bar'
+                ? 'bg-blue-500 text-white'
+                : 'text-gray-400 hover:text-white',
+            ]"
+          >
+            Every bar
+          </button>
+          <button
+            @click="model.tempoStep = 'cell'"
+            :class="[
+              'px-3 py-1 rounded font-bold transition-colors cursor-pointer',
+              model.tempoStep === 'cell'
+                ? 'bg-blue-500 text-white'
+                : 'text-gray-400 hover:text-white',
+            ]"
+          >
+            Every cell
+          </button>
+        </div>
+      </div>
+
       <label class="flex gap-2 items-center py-2 cursor-pointer">
         <input type="checkbox" v-model="model.stopAtEnd" class="w-4 h-4" />
         <Label label="Stop at end" />
       </label>
     </div>
+
     <hr class="border-gray-500" />
+
     <div
       class="flex flex-col lg:flex-row lg:justify-between flex-wrap gap-4 w-full"
     >
