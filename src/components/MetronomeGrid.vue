@@ -237,17 +237,30 @@ watch(
       <div
         v-for="r in rows"
         :key="`label-${r}`"
-        class="text-[10px] leading-0 text-white flex items-end font-bold justify-end pr-2 border-b border-white -mb-0.5"
+        class="text-[10px] leading-0 text-white flex items-end font-bold justify-end pr-1 border-b border-white relative"
         :style="{
           width: tempoColumnWidth + 'px',
           height: cellH + 'px',
           lineHeight: '12px',
         }"
       >
-        {{ 40 + (rows - r) * 5 }}
+        <div class="absolute top-[0.5px] left-0 w-full flex">
+          <div
+            v-if="40 + (rows - r) * 5 === startBpm"
+            :class="'border-t-4 border-green-500 w-full'"
+          />
+          <div
+            v-if="40 + (rows - r) * 5 === maxBpm"
+            :class="'border-t-4 border-red-500 w-full'"
+          />
+          <div
+            v-if="40 + (rows - r) * 5 === endBpm"
+            :class="'border-t-4 border-yellow-500 w-full'"
+          />
+        </div>
+        <span class="-mb-0.25">{{ 40 + (rows - r) * 5 }}</span>
       </div>
     </div>
-    {{ points }}
     <div class="w-full bg-gray-700">
       <svg
         :width="w"

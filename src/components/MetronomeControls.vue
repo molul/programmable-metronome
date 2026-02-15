@@ -19,7 +19,7 @@ function bump(key: keyof MetronomeConfig, delta: number) {
   if (model.value && typeof model.value[key] === "number") {
     const currentValue = model.value[key] as number;
     (model.value[key] as number) = Math.min(
-      200,
+      225,
       Math.max(40, currentValue + delta)
     );
   }
@@ -92,11 +92,19 @@ watch(
       <div class="flex gap-2 justify-between w-full items-center">
         <Label label="Bars per cell" />
         <div class="flex gap-2 items-center">
-          <Button label="-1" @click="model.barsPerCell--" class="w-14" />
+          <Button
+            label="-1"
+            @click="model.barsPerCell = Math.max(1, model.barsPerCell - 1)"
+            class="w-14"
+          />
           <div class="w-12 text-center text-white font-bold">
             {{ model.barsPerCell }}
           </div>
-          <Button label="+1" @click="model.barsPerCell++" class="w-14" />
+          <Button
+            label="+1"
+            @click="model.barsPerCell = Math.min(8, model.barsPerCell + 1)"
+            class="w-14"
+          />
         </div>
       </div>
 
