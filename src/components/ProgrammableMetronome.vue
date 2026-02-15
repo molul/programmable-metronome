@@ -91,7 +91,7 @@ const isRunning = computed(() => engine.isRunning.value);
           @click="engine.stop()"
         />
       </div>
-      <span class="font-bold text-2xl px-3 text-white text-center">
+      <span class="font-bold text-2xl px-3 pb-4 text-white text-center">
         {{ engine.currentBpm }} BPM
       </span>
     </div>

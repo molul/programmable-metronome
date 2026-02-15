@@ -162,7 +162,7 @@ watch(
         >
           <Label label="Load preset" />
           <select
-            class="font-bold rounded-md py-2 px-2 bg-white text-black min-w-[200px]"
+            class="font-bold rounded-md py-2 px-2 bg-gray-600 border border-gray-500 text-gray-100 min-w-[200px]"
             @change="
               loadPreset(
                 presets[($event.target as HTMLSelectElement).selectedIndex - 1]
