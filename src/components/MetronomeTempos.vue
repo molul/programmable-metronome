@@ -16,7 +16,7 @@ const store = useMetronomeStore()
         height: height / store.rows + 'px'
       }"
     >
-      <div class="absolute top-0 left-0 w-full flex">
+      <div class="absolute top-0 left-0 size-full flex">
         <div
           v-if="store.rowToBpm(r) === store.config.startBpm"
           class="border-t-0 bg-green-400 size-full"
