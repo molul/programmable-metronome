@@ -12,7 +12,8 @@ const store = useMetronomeStore()
       :key="r"
       class="text-[11px] text-white flex items-end justify-end pr-0.5 border-b border-white relative leading-none font-semibold"
       :style="{
-        width: store.temposColumnWidth + 'px',
+width: '30px',
+        //width: store.temposColumnWidth + 'px',
         height: height / store.rows + 'px'
       }"
     >
