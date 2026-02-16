@@ -23,7 +23,7 @@ onUnmounted(() => window.removeEventListener('mousedown', handleClickOutside))
 <template>
   <div
     ref="containerRef"
-    class="flex flex-col p-4 pl-2.5 relative z-50 bg-gray-800 rounded-t-lg"
+    class="flex flex-col gap-3 p-4 pl-2.5 relative z-50 bg-gray-800 rounded-t-lg"
   >
     <div class="flex justify-between items-center">
       <div class="flex items-center gap-2">
