@@ -19,18 +19,18 @@ const store = useMetronomeStore()
       <div class="absolute top-0 left-0 w-full flex">
         <div
           v-if="store.rowToBpm(r) === store.config.startBpm"
-          class="border-t-3 border-green-500 w-full"
+          class="border-t-3 bg-green-500 w-full"
         />
         <div
           v-if="store.rowToBpm(r) === store.config.maxBpm"
-          class="border-t-3 border-red-500 w-full"
+          class="border-t-3 bg-red-500 w-full"
         />
         <div
           v-if="store.rowToBpm(r) === store.config.endBpm"
-          class="border-t-3 border-yellow-500 w-full"
+          class="border-t-3 bg-yellow-500 w-full"
         />
       </div>
-      <span>{{ store.rowToBpm(r) }}</span>
+      <span :class="[store.config.startBpm, store.config.maxBpm, store.config.endBpm].includes(store.rowToBpm(r)) ? 'text-gray-900' : ''">{{ store.rowToBpm(r) }}</span>
     </div>
   </div>
 </template>
