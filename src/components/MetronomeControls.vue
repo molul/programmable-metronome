@@ -66,7 +66,7 @@ watch(
         <Label label="Bars per cell" />
         <div class="flex gap-2 items-center">
           <Button
-            label="-1"
+            label="-"
             @click="store.config.barsPerCell = Math.max(1, store.config.barsPerCell - 1)"
             class="w-14"
           />
@@ -74,7 +74,7 @@ watch(
             {{ store.config.barsPerCell }}
           </div>
           <Button
-            label="+1"
+            label="+"
             @click="store.config.barsPerCell = Math.min(8, store.config.barsPerCell + 1)"
             class="w-14"
           />
@@ -91,7 +91,7 @@ watch(
             :class="[
               'px-3 py-1 rounded font-bold transition-colors cursor-pointer capitalize',
               store.config.tempoStep === step
-                ? 'bg-blue-500 text-white'
+                ? 'bg-blue-600 text-white'
                 : 'text-gray-400 hover:text-white'
             ]"
           >
