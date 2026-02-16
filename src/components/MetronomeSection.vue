@@ -123,6 +123,14 @@ function move(e: MouseEvent | TouchEvent) {
   }
 
   points.value[dragging.value] = { col, row }
+
+// here
+  store.updatePoints(
+    points.value.map(p => ({
+      bar: p.col,
+      bpm: rowToBpm(p.row)
+    })) as [TempoPoint, TempoPoint, TempoPoint]
+  )
 }
 
 const svgPt = (p: GridPoint) => ({
