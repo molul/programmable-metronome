@@ -46,7 +46,7 @@ const store = useMetronomeStore()
             : '',
           'z-30'
         ]"
-        >{{ store.rowToBpm(r) }}</span
+        >{{ store.rowToBpm(r) +5 }}</span
       >
     </div>
   </div>
