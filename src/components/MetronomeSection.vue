@@ -105,7 +105,7 @@ watch(() => store.config.points, syncPointsFromStore, {
 
 const down = (i: number, e: MouseEvent | TouchEvent) => {
   if (store.isRunning) return
-  if (e.cancelable) e.preventDefault()
+
   dragging.value = i
 }
 
@@ -123,6 +123,11 @@ function up() {
 function move(e: MouseEvent | TouchEvent) {
   if (store.isRunning || dragging.value === null || !container.value) return
 
+  // DOn't scroll if dragging a point
+  if (e.cancelable) {
+    e.preventDefault()
+  }
+
   const p0 = points.value[0]
   const p1 = points.value[1]
   const p2 = points.value[2]
@@ -134,6 +139,7 @@ function move(e: MouseEvent | TouchEvent) {
 
   let clientX = 0
   let clientY = 0
+
   if ('touches' in e) {
     const touch = e.touches[0]
     if (!touch) return
@@ -150,7 +156,7 @@ function move(e: MouseEvent | TouchEvent) {
   let col = Math.max(0, Math.min(props.cols - 1, Math.floor(internalX / cellW.value)))
   let row = Math.max(0, Math.min(props.rows, Math.round(internalY / cellH.value)))
 
-  // Each point can't go further than its neighbors
+  // Constraint Logic
   if (dragging.value === 0) {
     col = Math.min(col, p1.col - 1)
   } else if (dragging.value === 1) {
@@ -186,11 +192,9 @@ const svgPt = (p: GridPoint) => ({
         @mousemove="move"
         @mouseup="up"
         @mouseleave="up"
-        @touchmove.prevent="move"
+        @touchmove="move"
         @touchend="up"
-        :class="[
-          'w-full overflow-visible select-none touch-none transition-colors duration-500 bg-zinc-800'
-        ]"
+        class="w-full overflow-visible select-none touch-pan-y bg-zinc-800"
       >
         <g class="background-stripes">
           <rect
