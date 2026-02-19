@@ -21,7 +21,7 @@ export const useMetronomeStore = defineStore('metronome', () => {
     peakBpm: 160,
     endBpm: 130,
     stopAtEnd: false,
-    barsPerCell: 1,
+    barsPerCell: 2,
     tempoStep: 'bar' as TempoStep,
     points: [
       { bar: 0, bpm: 100 },
@@ -76,7 +76,7 @@ export const useMetronomeStore = defineStore('metronome', () => {
     config.peakBpm = 160
     config.endBpm = 130
     config.stopAtEnd = false
-    config.barsPerCell = 1
+    config.barsPerCell = 2
     config.tempoStep = 'bar'
     config.points = [
       { bar: 0, bpm: 100 },
