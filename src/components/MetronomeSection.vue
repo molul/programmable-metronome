@@ -18,7 +18,7 @@ interface Props {
 const props = defineProps<Props>()
 const store = useMetronomeStore()
 
-const tempoColumnWidth = 30
+const tempoColumnWidth = 24
 const padding = 16
 const container = ref<HTMLDivElement | null>(null)
 const w = ref(300)
