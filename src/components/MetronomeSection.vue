@@ -197,7 +197,19 @@ const svgPt = (p: GridPoint) => ({
         @touchend="up"
         class="w-full overflow-visible select-none touch-none bg-zinc-800"
       >
-        <g class="stroke-zinc-500" stroke-width="1">
+        <g class="background-stripes">
+          <rect
+            v-for="i in Math.ceil(cols / 4)"
+            :key="i"
+            :x="(i - 1) * 4 * cellW"
+            y="0"
+            :width="4 * cellW"
+            :height="h"
+            :class="i % 2 === 0 ? 'fill-transparent' : 'fill-white/7'"
+          />
+        </g>
+
+        <g class="stroke-white/25" stroke-width="1">
           <line
             v-for="c in cols + 1"
             :key="c"
@@ -222,7 +234,7 @@ const svgPt = (p: GridPoint) => ({
           y="0"
           :width="cellW"
           :height="h"
-          fill="rgba(255,255,255,0.2)"
+          class="fill-green-500/20"
         />
 
         <line
