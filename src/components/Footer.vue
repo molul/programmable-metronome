@@ -1,7 +1,7 @@
 <script setup lang="ts"></script>
 
 <template>
-  <div class="text-xs text-center font-medium p-4 pt-1">
+  <div class="text-xs text-center font-medium px-4 py-2">
     Developed by
     <a
       href="https://www.luismorcilloluque.com"

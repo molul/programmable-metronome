@@ -65,13 +65,13 @@ async function handleInstall() {
 
 <template>
   <div
-    class="size-full lg:h-auto mx-auto lg:rounded-lg flex flex-col gap-3 relative p-0 lg:border border-zinc-700 shadow-md"
+    class="size-full sm:h-auto mx-auto sm:rounded-lg flex flex-col gap-0 relative p-0 sm:border border-zinc-700 shadow-md overflow-hidden"
   >
     <!-- <InstallPrompt /> -->
 
     <div
       v-if="installPrompt"
-      class="flex items-center justify-between p-3 rounded-t-lg bg-zinc-800 border-b border-zinc-700"
+      class="flex items-center justify-between p-3 bg-zinc-800 border-b border-zinc-700"
     >
       <div class="flex items-center gap-3">
         <div class="p-2 bg-blue-500/10 rounded-lg">
@@ -85,7 +85,7 @@ async function handleInstall() {
 
     <Header />
 
-    <div class="flex flex-col gap-2 w-full">
+    <div class="flex flex-col gap-2 w-full py-3">
       <BeatIndicator />
 
       <MetronomeSection :cols="16" :rows="37" :playhead-bar="store.visualBar" class="" />
@@ -107,8 +107,8 @@ async function handleInstall() {
           @click="stop"
         />
       </div>
-    </div>
 
-    <Footer />
+      <Footer />
+    </div>
   </div>
 </template>
