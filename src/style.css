@@ -11,8 +11,7 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-html,
-body {
+html {
   background-color: #18181b;
 }
 
