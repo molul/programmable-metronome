@@ -138,7 +138,5 @@ function handleOpenSaveModal() {
         />
       </div>
     </div>
-
-    <MetronomeControls v-if="menuVisible" />
   </div>
 </template>
