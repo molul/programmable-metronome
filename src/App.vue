@@ -2,6 +2,8 @@
 import Main from './components/Main.vue'
 import DynamicDialog from 'primevue/dynamicdialog'
 
+const isDark = ref(true)
+
 // Sync with saved preference on load
 onMounted(() => {
   isDark.value =
