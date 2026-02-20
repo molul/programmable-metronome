@@ -30,8 +30,8 @@ onMounted(() => {
     @click="toggleTheme"
 severity="secondary"
     :full-width="true"
-    label="Toggle theme"
-    aria-label="Toggle theme"
+:label="!isDark ? 'Dark theme' : 'Light theme'"
+:aria-label="!isDark ? 'Dark theme' : 'Light theme'"
     :icon="!isDark ? 'solar:moon-bold' : 'solar:sun-bold'"
   />
 </template>
