@@ -14,14 +14,6 @@ const toggleTheme = () => {
     localStorage.setItem('theme', 'light')
   }
 }
-
-// Sync with saved preference on load
-onMounted(() => {
-  isDark.value =
-    document.documentElement.classList.contains('dark') ||
-    localStorage.getItem('theme') === 'dark'
-  if (isDark.value) document.documentElement.classList.add('dark')
-})
 </script>
 
 <template>
