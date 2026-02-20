@@ -96,7 +96,7 @@ function handleOpenSaveModal() {
   >
     <div class="flex justify-between items-center">
       <div class="flex items-center gap-1.5">
-        <img :src="metronomeIconUrl" class="size-8 rounded-full" alt="Metronome Icon" />
+        <img :src="metronomeIconUrl" class="size-10 rounded-full" alt="Metronome Icon" />
         <!-- <Icon icon="mdi:metronome" class="size-8" /> -->
         <span class="text-[15px] font-bold text-left leading-none">
           SPEED TRAINING <br />
