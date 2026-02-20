@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import MyButton from './MyButton.vue'
 
 const isDark = ref(true)
