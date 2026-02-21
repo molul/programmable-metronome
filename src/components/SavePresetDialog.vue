@@ -104,7 +104,7 @@ const saveToStorage = () => {
         >
           <span class="font-medium">{{ p.name }}</span>
           <span
-            class="text-xs text-zinc-700 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-300"
+            class="font-medium text-xs text-zinc-700 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-300"
           >
             Click to overwrite
           </span>
