@@ -5,14 +5,12 @@ import { useMetronomeStore, type BeatType } from '../stores/useMetronomeStore'
 const store = useMetronomeStore()
 
 const currentBeatInBar = computed(() => {
-  // Adjusting for the 1-beat offset you had
   return store.beatInBar === 0 ? store.config.beatsPerBar - 1 : store.beatInBar - 1
 })
 
 const getBeatClass = (index: number) => {
   const type = store.config.beatPattern[index]
 
-  // Narrow the type and provide a fallback
   if (!type) return ''
 
   const isActive = currentBeatInBar.value === index
@@ -26,7 +24,7 @@ const getBeatClass = (index: number) => {
   return [
     'w-full h-4 border rounded-[3px] transition-all duration-150 cursor-pointer',
     isActive ? 'scale-y-125 brightness-110 shadow-sm' : 'opacity-80',
-    colors[type] // Now TS knows 'type' is a valid key for 'colors'
+    colors[type]
   ]
 }
 </script>
