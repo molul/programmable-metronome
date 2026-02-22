@@ -158,6 +158,13 @@
             &nbsp;
           </div>
         </div>
+
+  <div class="grid grid-cols-4 gap-2 font-medium">
+<span class="text-center">High</span>
+<span class="text-center">Low</span>
+<span class="text-center">High</span>
+<span class="text-center">Mute</span>
+   </div>
       </div>
     </section>
 
